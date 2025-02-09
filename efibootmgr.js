@@ -44,12 +44,12 @@ export class EFIBootManager {
 
   /**
    * Set's the next boot option
-   * @param {string} id 
+   * @param {string} id
    * @returns True if the boot option was set, otherwise false
    */
   static async SetBootOption(id) {
     if (!this.IsUseable()) return false;
-    const [status, stdout, stderr] = await ExecCommand(['/usr/bin/pkexec', 'efibootmgr', '-n', id],);
+    const [status, stdout, stderr] = await ExecCommand(['pkexec', 'efibootmgr', '-n', id],);
     if (status === 0) {
         Log(`Set boot option to ${id}`);
         return true;
@@ -71,18 +71,12 @@ export class EFIBootManager {
    * @returns A string containing the location of the binary, if none is found returns a blank string
    */
   static async GetBinary() {
-    let paths = ["/usr/bin/efibootmgr", "/usr/sbin/efibootmgr"];
-
-    let file;
-
-    for (let i = 0; i < paths.length; i++) {
-        file = Gio.file_new_for_path(paths[i]);
-        if (file.query_exists(null)) {
-            return paths[i];
-        }
+    const [status, stdout, stderr] = await ExecCommand(['which', 'efibootmgr'],);
+    if (status === 0) {
+      return "efibootmgr";
+    } else {
+      return "";
     }
-
-    return ""; 
   }
 
   /**
@@ -94,7 +88,7 @@ export class EFIBootManager {
 
   /**
    * This boot loader cannot be quick rebooted
-   */ 
+   */
   static async QuickRebootEnabled() {
     return false;
   }

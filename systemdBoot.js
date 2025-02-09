@@ -63,12 +63,12 @@ export class SystemdBoot {
 
   /**
    * Set's the next boot option
-   * @param {string} id 
+   * @param {string} id
    * @returns True if the boot option was set, otherwise false
    */
    static async SetBootOption(id) {
     if (!this.IsUseable()) return false;
-    const [status, stdout, stderr] = await ExecCommand(['/usr/bin/pkexec', '/usr/bin/bootctl', 'set-oneshot', id],);
+    const [status, stdout, stderr] = await ExecCommand(['pkexec', 'bootctl', 'set-oneshot', id],);
     if (status === 0) {
         Log(`Set boot option to ${id}`);
         return true;
@@ -91,18 +91,12 @@ export class SystemdBoot {
    * @returns A string containing the location of the binary, if none is found returns a blank string
    */
   static async GetBinary() {
-    let paths = ["/usr/sbin/bootctl", "/usr/bin/bootctl"];
-
-    let file;
-
-    for (let i = 0; i < paths.length; i++) {
-        file = Gio.file_new_for_path(paths[i]);
-        if (file.query_exists(null)) {
-            return paths[i];
-        }
+    const [status, stdout, stderr] = await ExecCommand(['which', 'bootctl'],);
+    if (status === 0) {
+      return "bootctl";
+    } else {
+      return "";
     }
-
-    return ""; 
   }
 
   /**
@@ -114,7 +108,7 @@ export class SystemdBoot {
 
   /**
    * This boot loader cannot be quick rebooted
-   */ 
+   */
   static async QuickRebootEnabled() {
     return false;
   }
